@@ -34,6 +34,7 @@ def copyFile(filePath, path):
         print(f"ERROR: File: {filePath} could not be found.")
     except OSError:
         print(f"ERROR: Path: {path} could not be found.")
+    print(f'Successfully copied file {os.path.basename(filePath)} to {path}')
         
 def moveFile(filePath, path):
     try:
@@ -42,19 +43,22 @@ def moveFile(filePath, path):
         print(f"ERROR: File: {filePath} could not be found.")
     except OSError:
         print(f"ERROR: Path: {path} could not be found.")
+    print(f'Successfully moved file {os.path.basename(filePath)} to {path}')
 
-def renameFile(filePath, newNamePath):
+def renameFile(filePath, newName):
     try:
-        os.rename(filePath, newNamePath)
+        newPath = os.path.join(os.path.dirname(filePath), newName)
+        os.rename(filePath, newPath)
     except FileNotFoundError:
         print(f"ERROR: File: {filePath} could not be found.")
+    print(f'Successfully renamed file {os.path.basename(filePath)} to {newName}')
     
 def deleteFile(filePath):
     try:
         os.remove(filePath)
     except FileNotFoundError:
         print(f"ERROR: File: {filePath} could not be found.")
-
+    print(f'Successfully deleted file {os.path.basename(filePath)}')
 
 if __name__ == "__main__":
     main()
