@@ -4,8 +4,8 @@ import os
 import logging
 
 def main():
-    logging.basicConfig(filename='file_operations.log', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-    
+    logging.basicConfig(filename='file_operations.log', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', required=True, type=str, nargs=1, help="The file to be managed.")
     parser.add_argument('-c', '--copy', type=str, nargs=1, help="The location to copy the file to.")
@@ -22,46 +22,53 @@ def main():
         parser.error('No actions were provided. Add -c or -m or -r or -d.')
 
     if args.copy is not None:
-        copyFile(args.file[0], args.copy[0])
+        copy_file(args.file[0], args.copy[0])
     elif args.move is not None:
-        moveFile(args.file[0], args.move[0])
+        move_file(args.file[0], args.move[0])
     elif args.rename is not None:
-        renameFile(args.file[0], args.rename[0])
+        rename_file(args.file[0], args.rename[0])
     elif args.delete is not None:
-        deleteFile(args.file[0])            
+        delete_file(args.file[0])            
 
-def copyFile(filePath, path):
+def copy_file(filePath, path):
     try:
         shutil.copy(filePath, path)
     except FileNotFoundError:
         logging.error(f'File: {filePath} could not be found.')
+        exit()
     except OSError:
         logging.error(f'Path: {path} could not be found.')
+        exit()
     logging.info(f'Copied file {os.path.basename(filePath)} to {path}')
-        
-def moveFile(filePath, path):
+
+    
+def move_file(filePath, path):
     try:
         shutil.move(filePath, path)
     except FileNotFoundError:
         logging.error(f'File: {filePath} could not be found.')
+        exit()
     except OSError:
-        logging.info(f'Path: {path} could not be found.')
+        logging.error(f'Path: {path} could not be found.')
+        exit()
     logging.info(f'Moved file {os.path.basename(filePath)} to {path}')
 
-def renameFile(filePath, newName):
+def rename_file(filePath, newName):
     try:
         newPath = os.path.join(os.path.dirname(filePath), newName)
         os.rename(filePath, newPath)
     except FileNotFoundError:
         logging.error(f'File: {filePath} could not be found.')
+        exit()
     logging.info(f'Renamed file {os.path.basename(filePath)} to {newName}')
-    
-def deleteFile(filePath):
+
+def delete_file(filePath):
     try:
         os.remove(filePath)
     except FileNotFoundError:
         logging.error(f'File: {filePath} could not be found.')
-    print(f'Successfully deleted file {os.path.basename(filePath)}')
+        exit()
+    logging.info(f'Deleted file {os.path.basename(filePath)}')
 
 if __name__ == "__main__":
     main()
