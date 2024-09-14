@@ -22,53 +22,44 @@ def main():
         parser.error('No actions were provided. Add -c or -m or -r or -d.')
 
     if args.copy is not None:
-        copy_file(args.file[0], args.copy[0])
+        copy_file(args.file[0], args.copy[0], action = 'Copied')
     elif args.move is not None:
-        move_file(args.file[0], args.move[0])
+        move_file(args.file[0], args.move[0], action = 'Moved')
     elif args.rename is not None:
-        rename_file(args.file[0], args.rename[0])
-    elif args.delete is not None:
-        delete_file(args.file[0])            
+        rename_file(args.file[0], args.rename[0], action = 'Renamed')
+    elif args.delete:
+        delete_file(args.file[0], action = 'Deleted')            
 
-def copy_file(filePath, path):
-    try:
-        shutil.copy(filePath, path)
-    except FileNotFoundError:
-        logging.error(f'File: {filePath} could not be found.')
-        exit()
-    except OSError:
-        logging.error(f'Path: {path} could not be found.')
-        exit()
-    logging.info(f'Copied file {os.path.basename(filePath)} to {path}')
-
+def logging_manager(func):
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+            action = kwargs.get('action', 'Operation')
+            logging.info(f'{action} file {os.path.basename(args[0])} successfully.')
+        except FileNotFoundError:
+            logging.error(f'File: {args[0]} could not be found.')
+            exit()
+        except OSError:
+            logging.error(f'Path: {args[1]} could not be found.')
+            exit()
+    return wrapper
     
-def move_file(filePath, path):
-    try:
-        shutil.move(filePath, path)
-    except FileNotFoundError:
-        logging.error(f'File: {filePath} could not be found.')
-        exit()
-    except OSError:
-        logging.error(f'Path: {path} could not be found.')
-        exit()
-    logging.info(f'Moved file {os.path.basename(filePath)} to {path}')
+@logging_manager
+def copy_file(filePath, path, **kwargs):
+    shutil.copy(filePath, path)
 
-def rename_file(filePath, newName):
-    try:
-        newPath = os.path.join(os.path.dirname(filePath), newName)
-        os.rename(filePath, newPath)
-    except FileNotFoundError:
-        logging.error(f'File: {filePath} could not be found.')
-        exit()
-    logging.info(f'Renamed file {os.path.basename(filePath)} to {newName}')
+@logging_manager
+def move_file(filePath, path, **kwargs):
+    shutil.move(filePath, path)
 
-def delete_file(filePath):
-    try:
-        os.remove(filePath)
-    except FileNotFoundError:
-        logging.error(f'File: {filePath} could not be found.')
-        exit()
-    logging.info(f'Deleted file {os.path.basename(filePath)}')
+@logging_manager
+def rename_file(filePath, newName, **kwargs):
+    newPath = os.path.join(os.path.dirname(filePath), newName)
+    os.rename(filePath, newPath)
+
+@logging_manager
+def delete_file(filePath, **kwargs):
+    os.remove(filePath)
 
 if __name__ == "__main__":
     main()
