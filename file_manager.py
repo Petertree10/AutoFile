@@ -7,19 +7,17 @@ def main():
     logging.basicConfig(filename='file_operations.log', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
     parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
     parser.add_argument('-f', '--file', required=True, type=str, nargs=1, help="The file to be managed.")
-    parser.add_argument('-c', '--copy', type=str, nargs=1, help="The location to copy the file to.")
-    parser.add_argument('-m', '--move', type=str, nargs=1, help="The location to move the file to.")
-    parser.add_argument('-r', '--rename', type=str, nargs=1, help="The location to move the file to.")
-    parser.add_argument('-d', '--delete', action="store_true", help="Specifies to delete the file.")
-
+    group.add_argument('-c', '--copy', type=str, nargs=1, help="The location to copy the file to.")
+    group.add_argument('-m', '--move', type=str, nargs=1, help="The location to move the file to.")
+    group.add_argument('-r', '--rename', type=str, nargs=1, help="The new name for the file.")
+    group.add_argument('-d', '--delete', action="store_true", help="Specifies to delete the file.")
+    
     args = parser.parse_args()
-    numOfArgs = (args.copy is not None) + (args.move is not None) + (args.rename is not None) + (args.delete)
 
-    if (numOfArgs) > 1:
-        parser.error('Too many actions were provided. Please provide only one action at a time.')
-    elif (numOfArgs) < 1:
-        parser.error('No actions were provided. Add -c or -m or -r or -d.')
+    if not args.file[0].strip():
+        raise ValueError('Invalid input: file path cannot be empty or whitespace.')
 
     if args.copy is not None:
         copy_file(args.file[0], args.copy[0], action = 'Copied')
@@ -37,11 +35,11 @@ def logging_manager(func):
             action = kwargs.get('action', 'Operation')
             logging.info(f'{action} file {os.path.basename(args[0])} successfully.')
         except FileNotFoundError:
-            logging.error(f'File: {args[0]} could not be found.')
-            exit()
+            logging.error(f'File {args[0]} does not exist. Please provide a valid file path.')
+            raise FileNotFoundError(f'File {args[0]} does not exist. Please provide a valid file path.')
         except OSError:
             logging.error(f'Path: {args[1]} could not be found.')
-            exit()
+            raise OSError(f'Path: {args[1]} could not be found.')
     return wrapper
     
 @logging_manager
